@@ -30,7 +30,7 @@ public class STSImplementation {
         this.iv = new byte[IV_LENGTH];
     }
 
-    public void startSTSagreement(BufferedReader in, PrintWriter out) {
+    public void startSTSAgreement(BufferedReader in, PrintWriter out) {
         try {
             KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("DH");
             KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
@@ -70,7 +70,7 @@ public class STSImplementation {
 
             //send publicKeySign to client
             out.println(Base64.getEncoder().encodeToString(
-                    new X509EncodedKeySpec(keyPairRSA.getPublic().getEncoded()).getEncoded()) );
+                    new X509EncodedKeySpec(keyPairRSA.getPublic().getEncoded()).getEncoded()));
             out.flush();
 
             //read client publicKeySign
@@ -79,7 +79,7 @@ public class STSImplementation {
                             Base64.getDecoder().decode(
                                     in.readLine())));
 
-            // receice Client signature
+            // receive Client signature
             byte[] signClient = this.decrypt(Base64.getDecoder().decode(in.readLine()));
 
             sign.update(keyPair.getPublic().getEncoded());
@@ -95,7 +95,7 @@ public class STSImplementation {
             clientSign.update(pkClient.getEncoded());
             clientSign.update(keyPair.getPublic().getEncoded());
 
-            if(!clientSign.verify(signClient))
+            if (!clientSign.verify(signClient))
                 throw new IllegalStateException("Invalid Signature!\n");
             else
                 System.out.println("Validation successful");
@@ -106,7 +106,7 @@ public class STSImplementation {
     }
 
 
-    public void proceedSTSAgreement(BufferedReader in, PrintWriter out){
+    public void proceedSTSAgreement(BufferedReader in, PrintWriter out) {
         try {
             KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("DH");
             KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
@@ -132,7 +132,6 @@ public class STSImplementation {
             // compute @sharedKey
             keyAgree.init(keyPair.getPrivate());
             keyAgree.doPhase(pkServer, true);
-//            this.sharedKey = keyAgree.generateSecret("AES");
             byte[] rawValue = keyAgree.generateSecret();
             this.sharedKey = new SecretKeySpec(rawValue, 0, 24, "TripleDES");
 
@@ -146,7 +145,7 @@ public class STSImplementation {
 
             // send publicKeySign to Server
             out.println(Base64.getEncoder().encodeToString(
-                    new X509EncodedKeySpec(keyPairRSA.getPublic().getEncoded()).getEncoded()) );
+                    new X509EncodedKeySpec(keyPairRSA.getPublic().getEncoded()).getEncoded()));
             out.flush();
 
             // read Server publicKeySign
@@ -162,7 +161,7 @@ public class STSImplementation {
             out.println(Base64.getEncoder().encodeToString(this.encrypt(sign.sign())));
             out.flush();
 
-            // receice Server signature
+            // receive Server signature
             byte[] aux = Base64.getDecoder().decode(in.readLine());
             byte[] signServer = this.decrypt(aux);
 
@@ -173,7 +172,7 @@ public class STSImplementation {
             serverSign.update(pkServer.getEncoded());
             serverSign.update(keyPair.getPublic().getEncoded());
 
-            if(!serverSign.verify(signServer))
+            if (!serverSign.verify(signServer))
                 throw new IllegalStateException("Invalid Signature!\n");
             else
                 System.out.println("Validation successful");
@@ -183,11 +182,11 @@ public class STSImplementation {
         }
     }
 
-    public byte[] encrypt(byte[] message){
+    public byte[] encrypt(byte[] message) {
         byte[] cryptogram = null;
         try {
             Cipher cipher = Cipher.getInstance("TripleDES/CTR/PKCS5Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, this.sharedKey , new IvParameterSpec(iv));
+            cipher.init(Cipher.ENCRYPT_MODE, this.sharedKey, new IvParameterSpec(iv));
 
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(this.sharedKey);
@@ -219,12 +218,11 @@ public class STSImplementation {
                 Cipher cipher = Cipher.getInstance("TripleDES/CTR/PKCS5Padding");
                 cipher.init(Cipher.DECRYPT_MODE, this.sharedKey, new IvParameterSpec(iv));
                 plainText = cipher.doFinal(cipherText);
-            }
-            else
+            } else
                 throw new IllegalAccessException("Problem: intrusion attempt!");
 
         } catch (Exception e) {
-        e.printStackTrace();
+            e.printStackTrace();
         }
         return plainText;
     }

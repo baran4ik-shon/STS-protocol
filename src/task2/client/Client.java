@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Base64;
 
+import static java.lang.System.out;
+
 
 public class Client {
 
@@ -20,9 +22,24 @@ public class Client {
         BufferedReader in =
                 new BufferedReader(new InputStreamReader(System.in));
         PrintWriter out = new PrintWriter(socket.getOutputStream());
+        BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        // verify
         dh.proceedSTSAgreement(new BufferedReader(new InputStreamReader(socket.getInputStream())), out);
-        String line;
 
+        // Bob's message reading
+        new Thread(() -> {
+            String line1;
+            try {
+                while ((line1 = input.readLine()) != null) {
+                    log("Bob" + " : " + new String(dh.decrypt(Base64.getDecoder().decode(line1))));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        // send message to Alice
+        String line;
         while((line = in.readLine()) != null){
             line =  Base64.getEncoder().encodeToString(dh.encrypt(line.getBytes()));
             out.println(line);
@@ -33,4 +50,9 @@ public class Client {
         socket.close();
 
     }
+
+    private static void log(String s) {
+        out.println(s);
+    }
+
 }

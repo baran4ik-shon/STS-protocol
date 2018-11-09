@@ -8,14 +8,14 @@ import java.security.spec.X509EncodedKeySpec;
 
 
 public class KeyUtils {
-    public static final int KEY_LENGTH = 1024;
 
+    private static final int KEY_LENGTH = 1024;
 
-    public static void generate(String filename){
+    private static void generate(String filename) {
         try {
             // Generate KeyPair
             KeyPairGenerator keyPG = KeyPairGenerator.getInstance("RSA");
-            keyPG.initialize(KEY_LENGTH , new SecureRandom());
+            keyPG.initialize(KEY_LENGTH, new SecureRandom());
             KeyPair keyPair = keyPG.generateKeyPair();
 
             // Write Public Key
@@ -35,8 +35,7 @@ public class KeyUtils {
         }
     }
 
-
-    public static KeyPair load(String filename){
+    static KeyPair load(String filename) {
         try {
             // Read Public Key
             FileInputStream pkFIS = new FileInputStream(filename + ".pkey");
@@ -64,11 +63,10 @@ public class KeyUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return null;
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         generate("server");
         generate("client");
     }
